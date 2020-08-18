@@ -30,7 +30,7 @@ function updateResult() {
           //toNb += 0 * (1 << (3-i));
       }
       else {
-        toNb +='+number('+sb+')'+'*'+(1 << (3-i));
+        toNb +='+fn:number('+sb+')'+'*'+(1 << (3-i));
       }
     }
 
