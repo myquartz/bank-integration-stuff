@@ -1,0 +1,24 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="jpos-test-ui">
+    <output-path>$PROJECT_DIR$/out/artifacts/jpos_test_ui</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="vn.fis.anhtt96.jpos.util.Main" />
+        <option name="description" value="" />
+        <option name="height" value="620" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="title" value="ISO8583 1987 Test" />
+        <option name="vendor" value="AnhTT96" />
+        <option name="version" value="" />
+        <option name="width" value="660" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="jpos_test_ui.jar">
+        <element id="module-output" name="jpos-test-ui" />
+        <element id="library" level="project" name="jdom-2.0.6" />
+        <element id="library" level="project" name="jpos-2.1.4" />
+      </element>
+    </root>
+  </artifact>
+</component>
