@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -52,6 +53,7 @@ public class Main extends Application {
                 a.showAndWait();
             }));
         }
+        primaryStage.getIcons().add(new Image(this.getClass().getResourceAsStream("icon.png")));
         primaryStage.show();
         myController = loader.getController();
         if(defaultConf) {

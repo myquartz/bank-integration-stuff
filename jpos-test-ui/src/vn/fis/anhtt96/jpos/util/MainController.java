@@ -101,6 +101,9 @@ public class MainController {
             lastDirectory = new File(Paths.get(props.getProperty("last.directory", ".")).toAbsolutePath().normalize().toString());
             this.generateCharRef = Boolean.parseBoolean(props.getProperty("iso8583.generate.character", "false"));
         }
+        else {
+            lastDirectory = new File(".");
+        }
 
         //load ISO8583 fields
         Properties isoprop = new Properties();
@@ -346,10 +349,18 @@ public class MainController {
             return;
         String connInfo = channelConnectInput.getText();
         int pi = connInfo.indexOf(":");
+        if(pi<=0)
+            return;
         MainService mainService = MainService.getInstance();
-        mainService.setHost(connInfo.substring(0, pi));
-        mainService.setPort(Integer.parseInt(connInfo.substring(pi + 1)));
         mainService.setSendingMessage(null);
+        mainService.setHost(connInfo.substring(0, pi));
+        if(pi+1 < connInfo.length())
+            try {
+                mainService.setPort(Integer.parseInt(connInfo.substring(pi + 1)));
+            }
+            catch (NumberFormatException e) {
+                messageTextArea.setText(e.toString());
+            }
     }
 
     private static String msgDetailToString(ISOMsg msg) {
