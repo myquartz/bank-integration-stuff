@@ -1,6 +1,5 @@
-package vn.fis.anhtt96.jpos.util;
+package net.vietfi.thachanh.jpos.util;
 
-import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import org.jpos.iso.*;
@@ -13,8 +12,6 @@ import org.jpos.util.SimpleLogListener;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainService extends Service<ISOMsg> {
     private static final Boolean mainLock = new Boolean(true);

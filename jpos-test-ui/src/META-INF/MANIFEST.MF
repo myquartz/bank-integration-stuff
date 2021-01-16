@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: vn.fis.anhtt96.jpos.util.Main
+Main-Class: net.vietfi.thachanh.jpos.util.Main
 

@@ -1,4 +1,4 @@
-package vn.fis.anhtt96.jpos.util;
+package net.vietfi.thachanh.jpos.util;
 
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;

@@ -1,4 +1,4 @@
-package vn.fis.anhtt96.jpos.util;
+package net.vietfi.thachanh.jpos.util;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -92,7 +92,7 @@ public class MainController {
             if (lastFiles != null && !lastFiles.isEmpty()) {
                 ObservableList<File> items = fileList.getItems();
                 items.addAll(Arrays.stream(lastFiles.split("\\s*;\\s*", 11))
-                        .limit(10).map((n) -> new File(n)).collect(Collectors.toList()));
+                        .limit(10).map(File::new).collect(Collectors.toList()));
             }
 
             channelConnectInput.setText(props.getProperty("connect.host.port", ""));
@@ -128,7 +128,7 @@ public class MainController {
         singleRound.selectedProperty().addListener((ob, o, n) -> {
             if(n != null) {
                 connectBtn.setDisable(n);
-                if(!n.booleanValue() && mainService.isConnected())
+                if(!n && mainService.isConnected())
                     switchConnectOn(true);
             }
         });
@@ -137,9 +137,7 @@ public class MainController {
             if (o != n && n != null) {
                 if(!n.exists()) {
                     messageTextArea.setText("File "+n+" is not found on disk, it will be removed from the recent list.");
-                    Platform.runLater(() -> {
-                        fileList.getItems().remove(n);
-                    });
+                    Platform.runLater(() -> fileList.getItems().remove(n));
                     return;
                 }
                 if (!saved) {
@@ -149,20 +147,14 @@ public class MainController {
                             " If you choose so the current messages will be lost.");
                     a.showAndWait()
                             .filter(response -> response == ButtonType.OK || response == ButtonType.YES)
-                            .ifPresent((b -> {
-                                runReadMessageTask(n, false);
-                            }));
+                            .ifPresent((b -> runReadMessageTask(n, false)));
                     return;
                 }
                 runReadMessageTask(n, false);
             }
         });
         msgDeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                currSelDE = newValue;
-            } else {
-                currSelDE = null;
-            }
+            currSelDE = newValue;
             switchDeEdit();
         });
         msgRespList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -179,8 +171,10 @@ public class MainController {
                 currSelDE.setValue(newValue);
         });
         inputDeValue.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (currSelDE != null && oldValue != null && oldValue.booleanValue() && newValue != null && !newValue.booleanValue())
-                msgDeList.refresh();
+            if (currSelDE == null || oldValue == null || !oldValue || newValue == null || newValue) {
+                return;
+            }
+            msgDeList.refresh();
         });
         inputAutoGen.selectedProperty().addListener((ob, o, n) -> {
             if (currSelDE != null && n != null) {
@@ -250,7 +244,7 @@ public class MainController {
         switchSendBtnOnData();
     }
 
-    Task<Boolean> createConnectTask(MainService mainService, boolean forSending) {
+    Task<Boolean> createConnectTask(MainService mainService) {
         Task<Boolean> connTask = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
@@ -284,7 +278,7 @@ public class MainController {
             if (msg != null) {
                 messageTextArea.setText(msg);
             }
-            if (connTask.getValue() != null && connTask.getValue().booleanValue()) {
+            if (connTask.getValue() != null && connTask.getValue()) {
                 switchConnectOn(true);
                 if(!running.get())
                     switchSendBtn(false);
@@ -312,7 +306,7 @@ public class MainController {
                                 return null;
                             }
                         })
-                        .filter((n) -> n != null)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.joining(";"));
                 props.setProperty("last.messages.files", lastFiles);
             }
@@ -416,7 +410,7 @@ public class MainController {
             return;
         }
         double d = progressBar.getProgress();
-        while (d<0.9)
+        if (d<0.9)
             progressBar.setProgress(d+0.01);
     }
 
@@ -452,22 +446,20 @@ public class MainController {
             if(!singleRound.isSelected()) {
                 switchConnectOn(false);
                 messageTextArea.setText("Connecting");
-                Task<Boolean> connTask = createConnectTask(mainService, false);
+                Task<Boolean> connTask = createConnectTask(mainService);
                 Main.executor.execute(connTask);
             }
         }
     }
 
-    boolean checkForMsgInput(String mti) {
-        if(!mti.matches("^\\d{4}$"))
-            return false;
-        return true;
+    boolean isNotCorrectMTI(String mti) {
+        return !mti.matches("^\\d{4}$");
     }
 
     void switchSendBtnOnData() {
         if(running.get())
             return;
-        sendBtn.setDisable(!checkForMsgInput(msgMTI.getText())
+        sendBtn.setDisable(isNotCorrectMTI(msgMTI.getText())
                 || msgDeList.getItems().isEmpty());
     }
 
@@ -478,7 +470,7 @@ public class MainController {
         }
         else {
             running.set(false);
-            sendBtn.setDisable(!checkForMsgInput(msgMTI.getText())
+            sendBtn.setDisable(isNotCorrectMTI(msgMTI.getText())
                     || msgDeList.getItems().isEmpty());
         }
     }
@@ -486,7 +478,7 @@ public class MainController {
     public void doSend(ActionEvent event) {
         if(!checkForConnInput())
             return;
-        if(!checkForMsgInput(msgMTI.getText())) {
+        if(isNotCorrectMTI(msgMTI.getText())) {
             messageTextArea.setText("MTI must be 4 digit (e.g. 0800)");
             return;
         }
@@ -503,7 +495,6 @@ public class MainController {
             ObservableList<MessageDataElement> list = msgDeList.getItems();
             //each field
             ListIterator<MessageDataElement> it = list.listIterator();
-            int i = 0;
 
             LocalDateTime now = LocalDateTime.now();
             while (it.hasNext()) {
@@ -555,7 +546,6 @@ public class MainController {
                         m.set(n.getFldNo(), n.getValue());
                         break;
                 }
-                i++;
             }
             mainService.setSendingMessage(m);
         } catch (RuntimeException | ISOException e) {
@@ -568,7 +558,7 @@ public class MainController {
         mainService.reset();
         msgRespList.getItems().add(mainService.getSendingMsg());
         if(!mainService.isConnected()) {
-            Task<Boolean> connTask = createConnectTask(mainService, true);
+            Task<Boolean> connTask = createConnectTask(mainService);
             CompletableFuture.runAsync(connTask).thenRun(() -> {
                 if(mainService.isConnected()) {
                     Platform.runLater(() -> {
@@ -577,9 +567,7 @@ public class MainController {
                     });
                 }
                 else
-                    Platform.runLater(() -> {
-                        progressBar.setVisible(false);
-                    });
+                    Platform.runLater(() -> progressBar.setVisible(false));
             });
         }
         else {
@@ -721,7 +709,7 @@ public class MainController {
                         writer.write("\"");
                         writer.append(msgDetailToString(msg));
                         //end of message
-                        writer.write(String.valueOf( "\n\n"));
+                        writer.write("\n\n");
                         savedCount++;
                     } catch (ISOException | IOException e) {
                         messageTextArea.setText("Error at msg#" + savedCount + ": " + e.toString());
@@ -784,9 +772,7 @@ public class MainController {
                 }
             }
         });
-        loadTask.setOnFailed((e) -> {
-            messageTextArea.setText("Load error:\n"+loadTask.getException().toString());
-        });
+        loadTask.setOnFailed((e) -> messageTextArea.setText("Load error:\n"+loadTask.getException().toString()));
         Main.executor.execute(loadTask);
         saved = true;
     }
@@ -884,14 +870,14 @@ public class MainController {
     }
 
     public void saveRequestMessages(ActionEvent event) {
-        if(!msgRespList.getItems().stream().filter(t -> {
+        if(!msgRespList.getItems().stream().anyMatch(t -> {
             try {
                 return t.isRequest();
             } catch (ISOException e) {
                 e.printStackTrace();
                 return false;
             }
-        }).findFirst().isPresent()) {
+        })) {
             messageTextArea.setText("Nothing to save");
             return;
         }
